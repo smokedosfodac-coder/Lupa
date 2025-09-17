@@ -1,0 +1,18 @@
+{% comment %} store/templates/store/_product_card.html {% endcomment %}
+{% load humanize %}
+
+<div class="product-card">
+    <a href="{% url 'product_page' product.id %}">
+        
+        {% with first_variant=product.variants.first %}
+            {% if first_variant and first_variant.images.first %}
+                <img src="{{ first_variant.images.first.image.url }}" alt="{{ product.name }}">
+            {% else %}
+                <img src="https://via.placeholder.com/300x250.png?text=Sem+Imagem" alt="Produto sem imagem">
+            {% endif %}
+        {% endwith %}
+
+        <h2>{{ product.name }}</h2>
+        <p class="price">R$ {{ product.price|floatformat:2|intcomma }}</p>
+    </a>
+</div>

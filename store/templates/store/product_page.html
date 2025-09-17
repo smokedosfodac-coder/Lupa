@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+
+<div class="product-container">
+    <section class="product-gallery">
+        <div class="main-image">
+            {% with first_variant=product.variants.first %}
+                {% if first_variant and first_variant.images.first %}
+                    <img id="mainProductImage" src="{{ first_variant.images.first.image.url }}" alt="{{ product.name }}">
+                {% else %}
+                    <img id="mainProductImage" src="{% static 'img/no-image.png' %}" alt="Sem imagem disponível">
+                {% endif %}
+            {% endwith %}
+        </div>
+        <div class="thumbnail-images">
+            {% for variant in product.variants.all %}
+                {% for image in variant.images.all %}
+                    <img src="{{ image.image.url }}" alt="Thumbnail da cor {{ variant.name }}" class="thumbnail-item" data-color="{{ variant.name|slugify }}" onclick="changeImage(this)">
+                {% empty %}
+                    <img src="{% static 'img/no-image.png' %}" alt="Sem imagem da cor {{ variant.name }}" class="thumbnail-item">
+                {% endfor %}
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="product-details">
+        <h1>{{ product.name }}</h1>
+        <p class="product-ref">Ref: {{ product.id }}</p> 
+        <div class="price-section">
+            <h2 class="current-price" id="price-display"> 
+                R$ {{ product.price|floatformat:2 }} <span>no PIX</span>
+            </h2>
+            <p class="installments" id="installments-display"> 
+                ou até <strong>12x</strong> de 
+                <strong>R$ {{ product.get_installment_value|floatformat:2 }}</strong> 
+                Sem juros no Cartão
+            </p>
+        </div>
+        
+        <div class="variant-selector">
+            <h3>Escolha a Cor: <span id="selectedColorName"></span></h3>
+            <div class="variant-options">
+                {% for variant in product.variants.all %}
+                    <div class="color-swatch {% if forloop.first %}active{% endif %}" 
+                         style="background-color: {{ variant.color_code }};" 
+                         data-color-name="{{ variant.name }}" 
+                         data-color-slug="{{ variant.name|slugify }}" 
+                         data-variant-id="{{ variant.id }}" 
+                         onclick="selectColor(this)">
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% if product.has_capacity_options %}
+            <div class="variant-selector">
+                <h3>Escolha a Capacidade:</h3>
+                <div class="variant-options">
+                    <button class="capacity-button active" data-price-increase="0" onclick="selectCapacity(this)">128GB</button>
+                    <button class="capacity-button" data-price-increase="400" onclick="selectCapacity(this)">256GB</button>
+                    <button class="capacity-button" data-price-increase="800" onclick="selectCapacity(this)">512GB</button>
+                </div>
+            </div>
+        {% endif %}
+
+        <form action="{% url 'start_purchase' %}" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="product_id" value="{{ product.id }}">
+            <input type="hidden" id="selectedVariantIdInput" name="variant_id" value="{{ product.variants.first.id|default:'' }}">
+            <input type="hidden" id="selectedCapacityInput" name="capacity" value="128GB">
+            <button type="submit" class="buy-button">Comprar</button>
+        </form>
+    </section>
+</div>
+
+<section class="product-description-section">
+    <h2>Descrição do Produto</h2>
+    <div class="description-content">
+        {{ product.description|safe }}
+    </div>
+</section>
+
+<script>
+    const basePrice = {{ product.price|stringformat:"f" }};
+
+    function changeImage(thumbnailElement) {
+        if (!thumbnailElement) return;
+        document.getElementById('mainProductImage').src = thumbnailElement.src;
+        document.querySelectorAll('.thumbnail-item').forEach(thumb => thumb.classList.remove('active'));
+        thumbnailElement.classList.add('active');
+    }
+
+    function selectColor(colorElement) {
+        if (!colorElement) return;
+        const colorName = colorElement.getAttribute('data-color-name');
+        const colorSlug = colorElement.getAttribute('data-color-slug');
+        const variantId = colorElement.getAttribute('data-variant-id');
+
+        document.getElementById('selectedColorName').textContent = colorName;
+        document.getElementById('selectedVariantIdInput').value = variantId;
+
+        document.querySelectorAll('.color-swatch').forEach(swatch => swatch.classList.remove('active'));
+        colorElement.classList.add('active');
+
+        let firstVisibleThumbnail = null;
+        document.querySelectorAll('.thumbnail-item').forEach(thumb => {
+            thumb.style.display = 'none';
+            if (thumb.dataset.color === colorSlug) {
+                thumb.style.display = 'block';
+                if (!firstVisibleThumbnail) firstVisibleThumbnail = thumb;
+            }
+        });
+
+        if (firstVisibleThumbnail) changeImage(firstVisibleThumbnail);
+    }
+
+    function selectCapacity(capacityElement) {
+        document.querySelectorAll('.capacity-button').forEach(button => button.classList.remove('active'));
+        capacityElement.classList.add('active');
+        document.getElementById('selectedCapacityInput').value = capacityElement.textContent;
+
+        const priceIncrease = parseFloat(capacityElement.getAttribute('data-price-increase'));
+        const newPrice = basePrice + priceIncrease;
+        const newInstallment = newPrice / 12;
+
+        const formattedPrice = newPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const formattedInstallment = newInstallment.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        document.getElementById('price-display').innerHTML = `R$ ${formattedPrice} <span>no PIX</span>`;
+        document.getElementById('installments-display').innerHTML = `ou até <strong>12x</strong> de <strong>R$ ${formattedInstallment}</strong> Sem juros`;
+    }
+</script>
+
+{% endblock %}

@@ -1,0 +1,321 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load static %}
+
+{% block title %}Nossos Produtos{% endblock %}
+
+{% block content %}
+<style>
+    .category-section {
+        max-width: 1200px;
+        margin: 0 auto 2rem auto; /* Centraliza o card e adiciona margem inferior */
+        padding: 2.5rem;
+        background-color: #fff;
+        border: 1px solid #e1e1e1;
+        border-radius: 18px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    }
+    .category-section h2 {
+        font-size: 2rem;
+        font-weight: 600;
+        margin-top: 0;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 1rem;
+    }
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 2rem;
+    }
+    .product-card { background-color: #fff; border: 1px solid #e1e1e1; border-radius: 12px; text-align: center; padding: 1.5rem; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .product-card:hover { transform: translateY(-5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .product-card a { text-decoration: none; color: #1d1d1f; }
+    .product-card img { width: 100%; height: 250px; object-fit: contain; margin-bottom: 1rem; }
+    .product-card h2 { font-size: 1.2rem; font-weight: 600; margin: 0.5rem 0; }
+    .product-card .price { font-size: 1.3rem; font-weight: 700; color: #111; margin-top: 0.5rem; }
+
+    .banner-container {
+        width: 100%;
+        padding: 20px 0;
+        text-align: center;
+    }
+
+    .banner-slideshow {
+    width: 80%;
+    max-width: 1000px;
+    margin: 0 auto;
+    position: relative; /* Essencial para posicionar as imagens dentro dele */
+    overflow: hidden;
+}
+
+/* 2. Todas as Imagens/Slides (escondidos por padrão) */
+.banner-slideshow .slide {
+    width: 100%;
+    display: block; /* Garante que a imagem se comporte como um bloco */
+    opacity: 0;
+    transition: opacity 0.8s ease-in-out;
+    position: absolute; /* Coloca todas as imagens uma sobre a outra */
+    top: 0;
+    left: 0;
+}
+
+/* 3. A Imagem/Slide Ativo (o único visível) */
+.banner-slideshow .slide.active {
+    opacity: 1;
+    position: relative; /* Faz com que o slide ativo defina a altura do contêiner */
+}
+.slide-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.4);
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 15px 10px;
+    font-size: 20px;
+    z-index: 10;
+    transition: background-color 0.2s;
+}
+
+.slide-arrow:hover {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.slide-arrow.prev {
+    left: 0;
+    border-radius: 0 3px 3px 0;
+}
+
+.slide-arrow.next {
+    right: 0;
+    border-radius: 3px 0 0 3px;
+}
+
+/* Adicione este CSS dentro da tag <style> em product_list.html */
+
+.category-showcase {
+    max-width: 1200px;
+    margin: 3rem auto; /* Aumenta o espaço entre o banner e os produtos */
+    padding: 0 2rem;
+}
+
+.category-grid {
+    display: flex;
+    justify-content: space-around; /* Espaça os itens igualmente */
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.category-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: #1d1d1f;
+    transition: transform 0.2s ease-in-out;
+}
+
+.category-item:hover {
+    transform: scale(1.05); /* Efeito de zoom ao passar o mouse */
+}
+
+.category-item img {
+    height: 100px; /* Altura fixa para todas as imagens */
+    margin-bottom: 1rem;
+    object-fit: contain;
+}
+
+.category-item h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0.2; } /* Fica um pouco visível no meio do piscar */
+    100% { opacity: 1; }
+}
+
+/* Aplica o estilo e a animação ao título */
+.new-release-title {
+    color: #cc0000; /* Um tom de vermelho forte */
+    animation: blink 1.8s infinite; /* Nome da animação, duração, repetição */
+}
+
+</style>
+{% comment %} O banner e a navegação por categorias só serão exibidos na página inicial {% endcomment %}
+{% if not page_title %}
+<div class="banner-container">
+    <div class="banner-slideshow">
+        <a href="{% url 'category_view' category_name='iphone' %}">
+            <img src="{% static 'product_imagens/banner4.jpeg' %}" alt="Banner 1" class="slide active">
+        </a>    
+        <a href="{% url 'category_view' category_name='iphone' %}">      
+            <img src="{% static 'product_imagens/banner3.jpg' %}" alt="Banner 2" class="slide">
+        </a>
+        <button class="slide-arrow prev" onclick="changeSlide(-1)">&#10094;</button>
+        <button class="slide-arrow next" onclick="changeSlide(1)">&#10095;</button>
+    </div>
+</div>
+
+<section class="category-showcase">
+    <div class="category-grid">
+        <a href="{% url 'category_view' category_name='iphone' %}" class="category-item">
+            <img src="{% static 'product_imagens/iphone.png' %}" alt="Categoria iPhone">
+            <h3>iPhone</h3>
+        </a>
+        <a href="{% url 'category_view' category_name='apple-watch' %}" class="category-item">
+            <img src="{% static 'product_imagens/apple-watch.png' %}" alt="Categoria Apple Watch">
+            <h3>Apple Watch</h3>
+        </a>
+        <a href="{% url 'category_view' category_name='mac' %}" class="category-item">
+            <img src="{% static 'product_imagens/mac.png' %}" alt="Categoria Mac">
+            <h3>Mac</h3>
+        </a>
+        <a href="{% url 'category_view' category_name='ipad' %}" class="category-item">
+            <img src="{% static 'product_imagens/ipad.png' %}" alt="Categoria iPad">
+            <h3>iPad</h3>
+        </a>
+        <a href="{% url 'category_view' category_name='airpods' %}" class="category-item">
+            <img src="{% static 'product_imagens/airpods.png' %}" alt="Categoria AirPods">
+            <h3>AirPods</h3>
+        </a>
+    </div>
+</section>
+{% endif %}
+
+<div class="page-container">
+    {% comment %}
+        Esta é a parte que foi corrigida.
+        Se a variável 'page_title' existir, significa que é uma página de categoria específica.
+        Se não existir, é a página inicial com todas as categorias.
+    {% endcomment %}
+    
+    {% if page_title and products %}
+    <section class="category-section">
+        <h2>{{ page_title }}</h2>
+        <div class="product-grid">
+            {% for product in products %}
+                {% include 'store/_product_card.html' with product=product %}
+            {% endfor %}
+        </div>
+    </section>
+    {% elif not page_title %}
+        {% if iphones_17 %}
+        <section class="category-section">
+            <h2 class="new-release-title"><strong>Novo iPhone 17</strong></h2>
+            <div class="product-grid">
+                {% for product in iphones_17 %}
+                    {% include 'store/_product_card.html' with product=product %}
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        {% if iphones_16 %}
+        <section class="category-section">
+            <h2><strong>iPhone 16</strong></h2>
+            <div class="product-grid">
+                {% for product in iphones_16 %}
+                    {% include 'store/_product_card.html' with product=product %}
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        {% if macs %}
+        <section class="category-section">
+            <h2><strong>Macs</strong></h2>
+            <div class="product-grid">
+                {% for product in macs %}
+                    {% include 'store/_product_card.html' with product=product %}
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        {% if airpods %}
+        <section class="category-section">
+            <h2><strong>AirPods</strong></h2>
+            <div class="product-grid">
+                {% for product in airpods %}
+                    {% include 'store/_product_card.html' with product=product %}
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        {% if apple_watches %}
+        <section class="category-section">
+            <h2><strong>Apple Watch</strong></h2>
+            <div class="product-grid">
+                {% for product in apple_watches %}
+                    {% include 'store/_product_card.html' with product=product %}
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+    {% else %}
+        <div class="category-section">
+            <h2>{{ page_title }}</h2>
+            <p>Nenhum produto encontrado nesta categoria.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const slides = document.querySelectorAll('.banner-slideshow .slide');
+    let currentSlideIndex = 0;
+    let slideInterval;
+
+    // Função principal que mostra um slide específico
+    function showSlide(index) {
+        // Esconde o slide atual
+        slides[currentSlideIndex].classList.remove('active');
+
+        // Atualiza o índice para o novo slide
+        currentSlideIndex = index;
+
+        // Lida com o loop (se passar do último, volta pro primeiro e vice-versa)
+        if (currentSlideIndex >= slides.length) {
+            currentSlideIndex = 0;
+        } else if (currentSlideIndex < 0) {
+            currentSlideIndex = slides.length - 1;
+        }
+
+        // Mostra o novo slide
+        slides[currentSlideIndex].classList.add('active');
+    }
+
+    // Função para avançar/retroceder o slide
+    window.changeSlide = function(direction) {
+        // Limpa o timer automático para não haver troca dupla
+        clearInterval(slideInterval);
+        // Mostra o próximo slide na direção indicada (1 para próximo, -1 para anterior)
+        showSlide(currentSlideIndex + direction);
+        // Reinicia o timer automático
+        startAutoSlide();
+    }
+
+    // Função que avança o slide automaticamente
+    function autoSlide() {
+        showSlide(currentSlideIndex + 1);
+    }
+
+    // Função para iniciar o timer
+    function startAutoSlide() {
+        slideInterval = setInterval(autoSlide, 5000); // troca a cada 5 segundos
+    }
+
+    // Inicia o slideshow
+    showSlide(0); // Garante que o primeiro slide esteja visível
+    startAutoSlide(); // Inicia o timer automático
+});
+</script>
+{% endblock extra_js %}

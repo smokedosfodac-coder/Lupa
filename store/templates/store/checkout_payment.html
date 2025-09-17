@@ -1,0 +1,17 @@
+<h2>Etapa 2 de 3: Pagamento</h2>
+<p>Complete o pagamento para finalizar sua compra.</p>
+
+<div id="wallet_container"></div>
+
+<script src="https://sdk.mercadopago.com/js/v2"></script>
+<script>
+    const mp = new MercadoPago('SUA_PUBLIC_KEY', { // Coloque sua Public Key aqui
+        locale: 'pt-BR'
+    });
+
+    mp.bricks().create("wallet", "wallet_container", {
+        initialization: {
+            preferenceId: "{{ preference_id }}",
+        },
+    });
+</script>

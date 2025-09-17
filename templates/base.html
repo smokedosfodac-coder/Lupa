@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Minha Loja{% endblock %}</title>
+    
+    <style>
+        /* ===== RESET BÁSICO E ESTILOS GERAIS ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        :root {
+            --primary-color: #0071e3;
+            --text-color: #1d1d1f;
+            --secondary-text-color: #86868b;
+            --border-color: #d2d2d7;
+            --yellow-button-color: #ffc107;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f5f5f7; /* Fundo cinza claro para o site */
+            color: var(--text-color);
+        }
+        a { text-decoration: none; }
+
+        /* ===== ESTILOS DO HEADER (COPIADOS DE ANTES) ===== */
+        .header-main { background-color: #000; color: #fff; padding: 1.2rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .header-main .logo img { height: 40px; }
+        .search-bar { flex-grow: 1; max-width: 600px; margin: 0 2rem; }
+        .search-bar input { width: 100%; padding: 0.8rem 1rem; border: none; border-radius: 8px; font-size: 1rem; }
+        .user-actions { display: flex; align-items: center; gap: 1.5rem; }
+        .user-actions a { color: #fff; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; }
+        .user-actions .icon { width: 24px; height: 24px; }
+        .user-actions .username { color: #fff; font-weight: 500; }
+        .header-nav { background-color: #000; border-top: 1px solid #333; padding: 0.5rem 2rem; display: flex; justify-content: center; align-items: center; }
+        .header-nav ul { margin: 0; padding: 0; list-style: none; display: flex; gap: 2rem; }
+        .header-nav a { color: #f5f5f5; font-size: 0.9rem; padding: 0.5rem 0; transition: color 0.2s; }
+        .header-nav a:hover { color: #0071e3; }
+        
+        /* ===== ESTILOS DA PÁGINA DE PRODUTO ===== */
+        .product-container { max-width: 1200px; margin: 2rem auto; padding: 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; background-color: #fff; border-radius: 18px; }
+        .product-gallery { display: flex; flex-direction: column; align-items: center; }
+        .main-image img { max-width: 100%; border-radius: 18px; margin-bottom: 1rem; cursor: pointer; }
+        .thumbnail-images { display: flex; justify-content: center; gap: 1rem; }
+        .thumbnail-images img { width: 64px; height: 64px; object-fit: contain; border: 2px solid var(--border-color); border-radius: 10px; cursor: pointer; transition: border-color 0.3s ease; }
+        .thumbnail-images .thumbnail-item.active, .thumbnail-images .thumbnail-item:hover { border-color: var(--primary-color); }
+        .product-details { display: flex; flex-direction: column; }
+        .product-details h1 { font-size: 2.5rem; font-weight: 600; margin: 0; }
+        .product-ref { color: var(--secondary-text-color); font-size: 0.9rem; margin-bottom: 1rem; }
+        .price-section .current-price { font-size: 2.8rem; font-weight: 700; margin: 0.5rem 0; }
+        .price-section .installments { font-size: 1.1rem; color: var(--text-color); }
+        .variant-selector { margin-top: 2rem; }
+        .variant-selector h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .variant-options { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; }
+        .color-swatch { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 2px solid var(--border-color); transition: transform 0.2s; }
+        .color-swatch.active { border: 2px solid var(--primary-color); transform: scale(1.15); }
+        .capacity-button { padding: 0.75rem 1rem; border: 2px solid var(--border-color); background-color: #fff; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 500; }
+        .capacity-button.active { border-color: var(--primary-color); color: var(--primary-color); background-color: #f0f7ff; }
+        .buy-button { background-color: var(--yellow-button-color); color: #111; font-size: 1.2rem; font-weight: 600; text-align: center; padding: 1rem; border: none; border-radius: 12px; cursor: pointer; margin-top: 2rem; width: 100%; }
+    
+        /* Dentro da sua tag <style> em base.html */
+
+        .product-description-section {
+            max-width: 1200px;         /* 1. Mesma largura máxima do card de cima */
+            margin: 2rem auto;         /* 2. Mesma margem para centralizar e dar espaçamento */
+            padding: 2rem;             /* 3. Mesmo preenchimento interno */
+            background-color: #fff;    /* 4. Fundo branco para criar o efeito de "card" */
+            border-radius: 18px;       /* 5. Bordas arredondadas para combinar */
+        }
+
+        .product-description-section h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            margin-top: 0;
+        }
+        .product-description-section .description-content {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        /* Adicione este código CSS dentro da tag <style> em base.html */
+
+/* --- Estilos do Rodapé Básico --- */
+.footer-basic {
+    background-color: #ffffff; /* Fundo branco */
+    border-top: 1px solid #e1e1e1; /* Linha divisória cinza claro */
+    padding: 1.5rem 2rem;
+    margin-top: 3rem; /* Espaço para separar do conteúdo acima */
+}
+
+.footer-basic-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between; /* Coloca os links de um lado e o contato do outro */
+    align-items: center;
+    flex-wrap: wrap; /* Permite que os links quebrem a linha em telas pequenas */
+    gap: 1rem;
+}
+
+.footer-links a, .footer-contact a {
+    color: #555; /* Cor do texto cinza escuro */
+    text-decoration: none;
+    margin: 0 0.75rem; /* Espaçamento entre os links */
+    font-size: 0.9rem;
+    transition: color 0.2s;
+}
+
+.footer-links a:hover, .footer-contact a:hover {
+    color: #000; /* Cor do texto fica preta ao passar o mouse */
+}
+.top-banner {
+    background-color: #0071e3; /* Azul vibrante para chamar a atenção */
+    color: #fff;
+    text-align: center;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.top-banner p {
+    margin: 0; /* Remove a margem padrão do parágrafo */
+}
+    
+    </style>
+</head>
+<body>
+    <div class="top-banner">
+        <p><strong>Frete Grátis Para Todo o Brasil.</strong> Entregamos em Até 7 Dias. 🚚</p>
+    </div>
+
+
+    <header>
+        <div class="header-main">
+            <a href="{% url 'product_list' %}" class="logo">
+                <img src="https://logodownload.org/wp-content/uploads/2017/05/iplace-logo-1.png" alt="Logo da Loja">
+            </a>
+
+            <form class="search-bar" action="{% url 'search_view' %}" method="get">
+                <input type="text" name="q" placeholder="Busca aqui...">
+            </form>
+
+            <div class="user-actions">
+                {% if user.is_authenticated %}
+                    <a href="#"> <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+                        <span class="username">Olá, {{ user.username }}</span>
+                    </a>
+                    <a href="{% url 'logout' %}">Sair</a>
+                {% else %}
+                    <a href="{% url 'login' %}">
+                        <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+                        <span>Bem vindo!<br>Entre ou cadastre-se</span>
+                    </a>
+                {% endif %}
+                
+                <a href="#"> <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                </a>
+            </div>
+        </div>
+
+        <nav class="header-nav">
+            <ul>
+                <li><a href="{% url 'category_view' category_name='iphone' %}">iPhone</a></li>
+                <li><a href="{% url 'category_view' category_name='mac' %}">Mac</a></li>
+                <li><a href="{% url 'category_view' category_name='apple-watch' %}">Apple Watch</a></li>
+                <li><a href="{% url 'category_view' category_name='ipad' %}">iPad</a></li>
+                <li><a href="{% url 'category_view' category_name='airpods' %}">AirPods</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+<footer class="footer-basic">
+    <div class="footer-basic-container">
+        <div class="footer-links">
+            <a href="{% url 'category_view' category_name='iphone' %}">iPhone</a>
+            <a href="{% url 'category_view' category_name='mac' %}">Mac</a>
+            <a href="{% url 'category_view' category_name='apple-watch' %}">Apple Watch</a>
+            <a href="{% url 'category_view' category_name='ipad' %}">iPad</a>
+            <a href="{% url 'category_view' category_name='airpods' %}">AirPods</a>
+            <a href="{% url 'login' %}">Login</a>
+            <a href="{% url 'register_or_login' %}">Cadastro</a>
+        </div>
+        <div class="footer-contact">
+            <a href="{% url 'contact_view' %}">Contato</a>
+        </div>
+    </div>
+</footer>
+{% block extra_js %}
+    {% endblock extra_js %}
+</body>
+</html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pedido Concluído</title>
+</head>
+<body>
+    <h1>Pedido Concluído com Sucesso!</h1>
+    
+    <h2>Detalhes do Pedido</h2>
+    <p><strong>Produto:</strong> {{ order.product.name }}</p>
+    <p><strong>Quantidade:</strong> {{ order.quantity }}</p>
+    <p><strong>Endereço de Entrega:</strong> {{ order.shipping_address }}</p>
+    
+    <hr>
+    
+    <h3>Previsão de Entrega</h3>
+    <p>Seu pedido chegará em aproximadamente <strong>14 dias</strong>.</p>
+    
+    <a href="/">Voltar para a loja</a>
+</body>
+</html>

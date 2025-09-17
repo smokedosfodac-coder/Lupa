@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Opções de Entrega{% endblock %}
+
+{% block content %}
+<style>
+    .checkout-container { max-width: 600px; margin: 2rem auto; padding: 2rem; background: #fff; border: 1px solid #000; }
+    .checkout-container h2 { margin-top: 0; }
+    .shipping-option {
+        border: 1px solid #ccc;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        border-radius: 8px;
+        cursor: pointer; /* Indica que é clicável, embora o formulário controle a ação */
+    }
+    .shipping-option h4 { margin: 0 0 0.5rem 0; }
+    .btn-submit { width: 100%; padding: 1rem; background-color: #000; color: #fff; border: none; font-size: 1.1rem; cursor: pointer; margin-top: 2rem; }
+</style>
+
+<div class="checkout-container">
+    <h2>Etapa 2 de 3: Escolha a Entrega</h2>
+    
+    <p>Selecione a opção de entrega para o seu endereço.</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="shipping-option">
+            <input type="radio" id="entrega_rapida" name="shipping_method" value="rapida" checked required>
+            <label for="entrega_rapida">
+                <h4>Entrega Rápida</h4>
+                <p>Receba seu pedido em até 7 dias.</p>
+            </label>
+        </div>
+        
+        <button type="submit" class="btn-submit">Confirmar Entrega e ir para Pagamento</button>
+    </form>
+</div>
+{% endblock %}
