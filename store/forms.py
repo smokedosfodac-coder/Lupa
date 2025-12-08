@@ -6,17 +6,39 @@ from django.contrib.auth.forms import UserChangeForm
 class CustomUserCreationForm(UserCreationForm):
     class Meta:
         model = CustomUser
-        fields = ('first_name', 'last_name', 'email', 'phone') # Adicionei phone se tiver criado no passo anterior
+        fields = ('first_name', 'last_name', 'email', 'phone')
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Força o campo Nome a ser obrigatório para aparecer no cabeçalho
-        self.fields['first_name'].required = True
-        self.fields['email'].required = True
-        
         # Adiciona classes CSS para ficar bonito
         for field in self.fields:
             self.fields[field].widget.attrs.update({'class': 'form-input'})
+        
+        # Torna campos obrigatórios
+        self.fields['first_name'].required = True
+        self.fields['email'].required = True
+
+    # --- VALIDAÇÃO DE E-MAIL ---
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if CustomUser.objects.filter(email=email).exists():
+            raise forms.ValidationError("Este e-mail já está sendo utilizado. Tente fazer login.")
+        return email
+
+    # --- VALIDAÇÃO DE TELEFONE ---
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone')
+        if phone and CustomUser.objects.filter(phone=phone).exists():
+            raise forms.ValidationError("Este telefone já está cadastrado.")
+        return phone
+
+    # --- GARANTIR QUE USERNAME SEJA O E-MAIL ---
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.username = user.email # Copia o email para o username
+        if commit:
+            user.save()
+        return user
 
 class ContactForm(forms.ModelForm):
     class Meta:

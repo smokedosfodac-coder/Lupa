@@ -204,15 +204,18 @@ def register_or_login(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
+            # 1. Salva o usuário
             user = form.save()
             
-            # --- CORREÇÃO: Definimos o backend explicitamente ---
-            # Dizemos ao Django que esse login é via "ModelBackend" (o padrão do banco de dados)
+            # 2. Faz o Login Automático
+            # Especificamos o backend para evitar aquele erro de "Multiple backends"
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             
+            # 3. Redireciona para a loja
             return redirect('product_list')
     else:
         form = CustomUserCreationForm()
+    
     return render(request, 'registration/register.html', {'form': form})
 
 @login_required
