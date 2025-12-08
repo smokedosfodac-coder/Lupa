@@ -1,0 +1,22 @@
+{% load humanize %} <a href="{% url 'product_detail' product.slug %}" class="product-card" style="position: relative;">
+    {% if product.is_promo_buy_1_get_2 %}
+        <span class="promo-tag">COMPRE 1 LEVE 2</span>
+    {% endif %}
+
+    {% if product.image %}
+        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+    {% else %}
+        <div style="height: 200px; background: #f5f5f7; display: flex; align-items: center; justify-content: center; border-radius: 10px; margin-bottom: 1rem; color: #999;">
+            Sem Foto
+        </div>
+    {% endif %}
+    
+    <h3>{{ product.name }}</h3>
+    
+    <div class="product-price">
+        R$ {{ product.price|intcomma }}
+    </div>
+    <div style="color: #86868b; font-size: 0.9rem; margin-top: 5px;">
+        10x de R$ {{ product.get_parcela_10x|floatformat:2 }}
+    </div>
+</a>

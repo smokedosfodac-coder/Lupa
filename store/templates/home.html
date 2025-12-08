@@ -1,0 +1,352 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Início | Minha Loja{% endblock %}
+
+{% block content %}
+<style>
+    /* --- FUNDO DO BANNER (Estilo Cyber/Industrial) --- */
+    .promo-banner {
+        position: relative;
+        width: 100%;
+        min-height: 550px; /* Altura boa para destaque */
+        background: radial-gradient(circle at 70% 50%, #2b2b2b 0%, #000000 70%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        margin-bottom: 3rem;
+        border-bottom: 4px solid #ff0000; /* Linha vermelha na base */
+    }
+
+    /* Elementos de fundo decorativos */
+    .bg-shape {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        z-index: 1;
+    }
+    .shape-red {
+        width: 300px; height: 300px;
+        background: rgba(255, 0, 0, 0.15);
+        top: -50px; right: -50px;
+    }
+    .shape-blue {
+        width: 400px; height: 400px;
+        background: rgba(0, 113, 227, 0.1);
+        bottom: -100px; left: -100px;
+    }
+
+    .banner-container {
+        max-width: 1200px;
+        width: 100%;
+        padding: 0 2rem;
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* Divide: Texto | Imagem */
+        align-items: center;
+        position: relative;
+        z-index: 10;
+        gap: 2rem;
+    }
+
+    /* --- LADO ESQUERDO: TEXTOS --- */
+    .banner-text h2 {
+        color: #ff0000;
+        font-size: 1.5rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 0.5rem;
+    }
+
+    .banner-text h1 {
+        color: #fff;
+        font-size: 4.5rem;
+        font-weight: 900;
+        line-height: 1;
+        margin-bottom: 1rem;
+        text-shadow: 0 0 20px rgba(255,255,255,0.1);
+    }
+    
+    .banner-text .highlight {
+        color: #fff;
+        -webkit-text-stroke: 2px #fff;
+        color: transparent; /* Efeito vazado */
+    }
+
+    /* Caixa de Regras */
+    .rules-box {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        max-width: 450px;
+    }
+
+    .rules-box h3 {
+        color: #ffc107; /* Amarelo */
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .rules-box ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .rules-box li {
+        color: #ccc;
+        font-size: 0.95rem;
+        margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .rules-box li::before {
+        content: "✓";
+        color: #00ff00;
+        font-weight: bold;
+    }
+
+    .cta-button {
+        display: inline-block;
+        background-color: #ff0000;
+        color: #fff;
+        padding: 1.2rem 3rem;
+        font-size: 1.2rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        border-radius: 50px;
+        text-decoration: none;
+        box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
+        transition: all 0.3s;
+        border: 2px solid transparent;
+    }
+
+    .cta-button:hover {
+        background-color: #000;
+        border-color: #ff0000;
+        color: #ff0000;
+        transform: scale(1.05);
+        box-shadow: 0 0 40px rgba(255, 0, 0, 0.6);
+    }
+
+    /* --- LADO DIREITO: IMAGEM FLUTUANTE --- */
+    .banner-image {
+        position: relative;
+        display: flex;
+        justify-content: center;
+    }
+
+    /* Animação de flutuar */
+    @keyframes float {
+        0% { transform: translateY(0px) rotate(-5deg); }
+        50% { transform: translateY(-20px) rotate(-5deg); }
+        100% { transform: translateY(0px) rotate(-5deg); }
+    }
+
+    .juliet-img {
+        width: 120%; /* Maior que o container para estourar */
+        max-width: 700px;
+        filter: drop-shadow(0 20px 30px rgba(0,0,0,0.5));
+        animation: float 4s ease-in-out infinite;
+        transform: rotate(-5deg);
+    }
+
+    /* Selo de Oferta */
+    .sticker {
+        position: absolute;
+        top: 0;
+        right: 10%;
+        background: #ffc107;
+        color: #000;
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        font-weight: 900;
+        font-size: 1.2rem;
+        transform: rotate(15deg);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        animation: pulse-sticker 2s infinite;
+        z-index: 15;
+    }
+
+    @keyframes pulse-sticker {
+        0% { transform: rotate(15deg) scale(1); }
+        50% { transform: rotate(15deg) scale(1.1); }
+        100% { transform: rotate(15deg) scale(1); }
+    }
+
+    /* Responsivo para Celular */
+    @media (max-width: 768px) {
+        .promo-banner { min-height: auto; padding: 4rem 0; }
+        .banner-container { grid-template-columns: 1fr; text-align: center; }
+        .banner-text h1 { font-size: 3rem; }
+        .rules-box { margin: 0 auto 2rem; text-align: left; }
+        .juliet-img { width: 100%; margin-top: 2rem; }
+        .sticker { right: 5%; top: -20px; width: 80px; height: 80px; font-size: 1rem; }
+        /* No celular, invertemos a ordem para a imagem ficar em cima ou embaixo conforme preferir */
+        .banner-image { order: -1; } 
+    }
+    
+    /* --- ESTILO DAS SEÇÕES DE PRODUTOS (AJUSTADO) --- */
+    .category-section {
+        max-width: 1200px;
+        margin: 0 auto 4rem;
+        padding: 0 2rem;
+    }
+
+    .section-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #e1e1e1;
+        color: #1d1d1f;
+    }
+
+    /* GRID REAJUSTADO PARA PRODUTOS MENORES */
+    .products-grid {
+        display: grid;
+        /* Mudança Aqui: minmax de 250px para 200px deixa os cards mais estreitos */
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1.5rem; /* Espaço entre eles um pouco menor */
+    }
+
+    /* Estilo do Cartão herdado do include, mas podemos forçar ajustes aqui se precisar */
+    .product-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 1rem; /* Menos padding interno */
+        text-align: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid transparent;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 100%;
+        text-decoration: none; /* Garante que não tenha sublinhado no link */
+        color: inherit;
+    }
+
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        border-color: #d2d2d7;
+    }
+
+    .product-card img {
+        width: 100%;
+        /* Altura reduzida para a imagem não dominar a tela */
+        height: 150px; 
+        object-fit: contain;
+        margin-bottom: 0.8rem;
+        padding: 5px; /* Espacinho para a imagem "respirar" */
+    }
+
+    .product-card h3 {
+        font-size: 1rem; /* Fonte do nome um pouco menor */
+        margin-bottom: 0.4rem;
+        color: #1d1d1f;
+        font-weight: 600;
+        line-height: 1.3;
+    }
+
+    .product-price {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #1d1d1f;
+        margin-top: auto;
+    }
+
+</style>
+
+<div class="promo-banner">
+    <div class="bg-shape shape-red"></div>
+    <div class="bg-shape shape-blue"></div>
+
+    <div class="banner-container">
+        <div class="banner-text">
+            <h2>Oferta Exclusiva</h2>
+            <h1>COMPRE 1 <br><span class="highlight">LEVE 2</span></h1>
+            
+            <div class="rules-box">
+                <h3><span style="font-size:1.5rem;">⚡</span> Como funciona:</h3>
+                <ul>
+                    <li>Adicione <strong>2 óculos</strong> ao seu carrinho.</li>
+                    <li>Pode misturar modelos (Oakley, Solar, etc).</li>
+                    <li>O item de menor valor sai <strong>DE GRAÇA</strong>.</li>
+                    <li>Desconto aplicado automaticamente.</li>
+                </ul>
+            </div>
+
+            <a href="{% url 'promo_view' %}" class="cta-button">
+                GARANTIR PROMOÇÃO
+            </a>
+        </div>
+
+        <div class="banner-image">
+            <div class="sticker">PROMOÇÃO<br>RELÂMPAGO</div>
+            <img src="{% static 'img/juliet.webp' %}" alt="Juliet X-Metal" class="juliet-img">
+        </div>
+    </div>
+</div>
+
+<div id="loja"></div>
+
+{% if oakley %}
+    <section class="category-section">
+        <h2 class="section-title">Óculos Oakley</h2>
+        <div class="products-grid">
+            {% for product in oakley %}
+                {% include "includes/product_card_snippet.html" %}
+            {% endfor %}
+        </div>
+    </section>
+{% endif %}
+
+{% if solar %}
+    <section class="category-section">
+        <h2 class="section-title">Óculos de Sol</h2>
+        <div class="products-grid">
+            {% for product in solar %}
+                {% include "includes/product_card_snippet.html" %}
+            {% endfor %}
+        </div>
+    </section>
+{% endif %}
+
+{% if grau %}
+    <section class="category-section">
+        <h2 class="section-title">Armações de Grau</h2>
+        <div class="products-grid">
+            {% for product in grau %}
+                {% include "includes/product_card_snippet.html" %}
+            {% endfor %}
+        </div>
+    </section>
+{% endif %}
+
+{% if acessorios %}
+    <section class="category-section">
+        <h2 class="section-title">Acessórios</h2>
+        <div class="products-grid">
+            {% for product in acessorios %}
+                {% include "includes/product_card_snippet.html" %}
+            {% endfor %}
+        </div>
+    </section>
+{% endif %}
+
+{% endblock %}

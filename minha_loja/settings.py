@@ -170,3 +170,20 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 AUTH_USER_MODEL = 'store.CustomUser'
 
 print(f"DEBUG: O MEDIA_ROOT está apontando para: {MEDIA_ROOT}")
+
+# Configuração de E-mail para TESTE (Aparece no console)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Quando for colocar no ar de verdade, troque por:
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'seuemail@gmail.com'
+# EMAIL_HOST_PASSWORD = 'senha-de-app-google'
+
+# Configuração para permitir Login com E-mail
+AUTHENTICATION_BACKENDS = [
+    'store.backends.EmailBackend', # O arquivo que acabamos de criar
+    'django.contrib.auth.backends.ModelBackend', # O padrão (segurança)
+]

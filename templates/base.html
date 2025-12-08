@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -39,7 +40,11 @@
         .header-nav ul { margin: 0; padding: 0; list-style: none; display: flex; gap: 2rem; }
         .header-nav a { color: #f5f5f5; font-size: 0.9rem; padding: 0.5rem 0; transition: color 0.2s; }
         .header-nav a:hover { color: #0071e3; }
-        
+        .header-main .logo img {
+            height: 80px;        /* Aumenta o tamanho (era 40px) */
+            border-radius: 15px; /* Arredonda os cantos */
+            transition: all 0.3s ease; /* (Opcional) Suaviza se você mudar o tamanho no futuro */
+        }
         /* ===== ESTILOS DA PÁGINA DE PRODUTO ===== */
         .product-container { max-width: 1200px; margin: 2rem auto; padding: 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; background-color: #fff; border-radius: 18px; }
         .product-gallery { display: flex; flex-direction: column; align-items: center; }
@@ -137,7 +142,7 @@
     <header>
         <div class="header-main">
             <a href="{% url 'product_list' %}" class="logo">
-                <img src="https://logodownload.org/wp-content/uploads/2017/05/iplace-logo-1.png" alt="Logo da Loja">
+                <img src="{% static 'img/lupa.jpg' %}" alt="Minha Ótica">
             </a>
 
             <form class="search-bar" action="{% url 'search_view' %}" method="get">
@@ -146,7 +151,7 @@
 
             <div class="user-actions">
                 {% if user.is_authenticated %}
-                    <a href="#"> <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+                    <a href="{% url 'profile_view' %}"> <svg class="icon" ...>...</svg>
                         <span class="username">Olá, {{ user.username }}</span>
                     </a>
                     <a href="{% url 'logout' %}">Sair</a>
@@ -157,18 +162,20 @@
                     </a>
                 {% endif %}
                 
-                <a href="#"> <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                <a href="{% url 'cart_view' %}" title="Ver meu Carrinho">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                    </svg>
                 </a>
             </div>
         </div>
 
         <nav class="header-nav">
             <ul>
-                <li><a href="{% url 'category_view' category_name='iphone' %}">iPhone</a></li>
-                <li><a href="{% url 'category_view' category_name='mac' %}">Mac</a></li>
-                <li><a href="{% url 'category_view' category_name='apple-watch' %}">Apple Watch</a></li>
-                <li><a href="{% url 'category_view' category_name='ipad' %}">iPad</a></li>
-                <li><a href="{% url 'category_view' category_name='airpods' %}">AirPods</a></li>
+                <li><a href="{% url 'category_view' category_name='oakley' %}">Óculos Oakley</a></li>
+                <li><a href="{% url 'category_view' category_name='grau' %}">Armações de Grau</a></li>
+                <li><a href="{% url 'category_view' category_name='solar' %}">Óculos de Sol</a></li>
+                <li><a href="{% url 'category_view' category_name='acessorios' %}">Acessórios</a></li>
             </ul>
         </nav>
     </header>
@@ -179,19 +186,12 @@
     </main>
 
 <footer class="footer-basic">
-    <div class="footer-basic-container">
-        <div class="footer-links">
-            <a href="{% url 'category_view' category_name='iphone' %}">iPhone</a>
-            <a href="{% url 'category_view' category_name='mac' %}">Mac</a>
-            <a href="{% url 'category_view' category_name='apple-watch' %}">Apple Watch</a>
-            <a href="{% url 'category_view' category_name='ipad' %}">iPad</a>
-            <a href="{% url 'category_view' category_name='airpods' %}">AirPods</a>
-            <a href="{% url 'login' %}">Login</a>
-            <a href="{% url 'register_or_login' %}">Cadastro</a>
-        </div>
-        <div class="footer-contact">
-            <a href="{% url 'contact_view' %}">Contato</a>
-        </div>
+    <div class="footer-links">
+        <a href="{% url 'category_view' category_name='oakley' %}">Oakley</a>
+        <a href="{% url 'category_view' category_name='grau' %}">Grau</a>
+        <a href="{% url 'category_view' category_name='solar' %}">Solar</a>
+        <a href="{% url 'login' %}">Login</a>
+        <a href="{% url 'register_or_login' %}">Cadastro</a>
     </div>
 </footer>
 {% block extra_js %}

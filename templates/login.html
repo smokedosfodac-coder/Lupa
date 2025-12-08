@@ -1,57 +1,147 @@
 {% extends 'base.html' %}
 
-{% block title %}Login{% endblock %}
+{% block title %}Entrar | Minha Loja{% endblock %}
 
 {% block content %}
 <style>
-    .login-container {
-        max-width: 400px;
-        margin: 4rem auto;
+    .auth-wrapper {
+        min-height: 70vh; /* Centraliza verticalmente */
+        display: flex;
+        align-items: center;
+        justify-content: center;
         padding: 2rem;
+    }
+
+    .auth-card {
         background: #fff;
-        border: 1px solid #000;
-        border-radius: 8px;
-    }
-    .login-container h2 {
+        padding: 3rem;
+        width: 100%;
+        max-width: 450px;
+        border-radius: 24px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
         text-align: center;
-        margin-top: 0;
     }
-    .login-container form p {
-        margin-bottom: 1rem;
-    }
-    .login-container form label {
-        display: block;
+
+    .auth-card h2 {
+        font-size: 1.8rem;
+        font-weight: 700;
         margin-bottom: 0.5rem;
+        color: #1d1d1f;
     }
-    .login-container form input {
-        width: 100%;
-        padding: 0.7rem;
-        border: 1px solid #ccc;
-        box-sizing: border-box; /* Garante que o padding não aumente a largura */
+
+    .auth-card p {
+        color: #86868b;
+        margin-bottom: 2rem;
     }
-    .login-container button {
+
+    /* Estilo dos Inputs do Django */
+    .auth-card input {
         width: 100%;
-        padding: 0.8rem;
-        background: #000;
-        color: #fff;
+        padding: 14px 16px;
+        margin-bottom: 1rem;
+        border: 1px solid #d2d2d7;
+        border-radius: 12px;
+        font-size: 1rem;
+        background-color: #fafafa;
+        transition: all 0.2s;
+        box-sizing: border-box; /* Garante que padding não estoure a largura */
+    }
+
+    .auth-card input:focus {
+        background-color: #fff;
+        border-color: #0071e3;
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
+    }
+
+    .auth-card label {
+        display: none; /* Esconde os labels "Usuário" e "Senha" para ficar clean */
+    }
+
+    .btn-login {
+        width: 100%;
+        padding: 14px;
+        background-color: #0071e3;
+        color: white;
         border: none;
+        border-radius: 12px;
         font-size: 1.1rem;
+        font-weight: 600;
         cursor: pointer;
         margin-top: 1rem;
+        transition: background 0.2s;
+    }
+
+    .btn-login:hover {
+        background-color: #0077ed;
+    }
+
+    .divider {
+        margin: 2rem 0;
+        border-top: 1px solid #e1e1e1;
+        position: relative;
+    }
+
+    .divider span {
+        position: absolute;
+        top: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #fff;
+        padding: 0 10px;
+        color: #86868b;
+        font-size: 0.9rem;
+    }
+
+    .btn-register {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        background-color: transparent;
+        color: #0071e3;
+        border: 2px solid #0071e3;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s;
+        box-sizing: border-box;
+    }
+
+    .btn-register:hover {
+        background-color: #f0f7ff;
     }
 </style>
 
-<div class="login-container">
-    <h2>Entrar na sua conta</h2>
-    {% if form.errors %}
-        <p style="color: red;">Seu usuário e senha não correspondem. Tente novamente.</p>
-    {% endif %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <h2>Bem-vindo de volta</h2>
+        <p>Acesse sua conta para gerenciar seus pedidos.</p>
 
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Entrar</button>
-        <input type="hidden" name="next" value="{{ next }}">
-    </form>
+        <form method="post">
+            {% csrf_token %}
+            
+            {% if form.errors %}
+                <div style="background: #fff5f5; color: #c62828; padding: 10px; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9rem;">
+                    E-mail ou senha incorretos. Tente novamente.
+                </div>
+            {% endif %}
+
+            <div>
+                <input type="text" name="username" placeholder="Seu E-mail" required id="id_username">
+            </div>
+            <div>
+                <input type="password" name="password" placeholder="Sua Senha" required id="id_password">
+            </div>
+
+            <button type="submit" class="btn-login">Entrar</button>
+        </form>
+
+        <div class="divider">
+            <span>ou</span>
+        </div>
+
+        <a href="{% url 'register_or_login' %}" class="btn-register">Criar nova conta</a>
+    </div>
 </div>
 {% endblock %}

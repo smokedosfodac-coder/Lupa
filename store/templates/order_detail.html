@@ -1,0 +1,27 @@
+<div style="text-align: right; margin-top: 2rem; font-size: 1.5rem; font-weight: bold;">
+            Total: R$ {{ order.total_price|intcomma }}
+        </div>
+
+        {% if order.status == 'pendente' and payment_url %}
+            <div style="margin-top: 2rem; text-align: right;">
+                <a href="{{ payment_url }}" target="_blank" style="
+                    background-color: #009ee3; /* Azul Mercado Pago */
+                    color: white;
+                    padding: 15px 30px;
+                    border-radius: 8px;
+                    text-decoration: none;
+                    font-size: 1.2rem;
+                    font-weight: bold;
+                    display: inline-block;
+                    transition: background 0.3s;
+                ">
+                    Pagar com Mercado Pago 💳
+                </a>
+                <p style="font-size: 0.9rem; color: #666; margin-top: 10px;">
+                    Pix, Cartão de Crédito ou Boleto
+                </p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

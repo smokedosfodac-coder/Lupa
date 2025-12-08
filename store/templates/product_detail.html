@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}{{ product.name }} | Minha Loja{% endblock %}
+
+{% block content %}
+<style>
+    /* Estilos da Animação do Botão Promoção */
+    @keyframes pulse-tricolor {
+        0% { background-color: #0071e3; transform: scale(1); }
+        33% { background-color: #ffc107; transform: scale(1.02); }
+        66% { background-color: #ff0000; transform: scale(1); }
+        100% { background-color: #0071e3; transform: scale(1); }
+    }
+
+    .promo-button-link {
+        display: inline-block;
+        background-color: #0071e3; 
+        color: #fff !important;
+        font-weight: 800;
+        text-transform: uppercase;
+        padding: 1rem 2rem;
+        border-radius: 50px;
+        text-align: center;
+        text-decoration: none;
+        margin: 1.5rem 0;
+        font-size: 1rem;
+        letter-spacing: 1px;
+        border: 3px solid white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        animation: pulse-tricolor 2s infinite ease-in-out;
+        cursor: pointer;
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .promo-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background-color: #ff0000;
+        color: white;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-weight: bold;
+        font-size: 0.9rem;
+        z-index: 10;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .main-image { position: relative; }
+</style>
+
+<div class="product-container">
+    
+    <div class="product-gallery">
+        <div class="main-image">
+            {% if product.is_promo_buy_1_get_2 %}
+                <div class="promo-badge">COMPRE 1 LEVE 2</div>
+            {% endif %}
+
+            {% if product.image %}
+                <img id="mainProductImage" src="{{ product.image.url }}" alt="{{ product.name }}">
+            {% else %}
+                <div style="width: 500px; height: 500px; background: #f5f5f7; display: flex; align-items: center; justify-content: center; border-radius: 18px;">
+                    Sem Imagem
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="product-details">
+        <p class="product-ref">Código: {{ product.id }}</p>
+
+        {% if product.is_promo_buy_1_get_2 %}
+            <div style="text-align: center;">
+                <a href="{% url 'promo_view' %}" class="promo-button-link">
+                    🔥 Compre 1 Leve 2 - Ver Coleção
+                </a>
+            </div>
+        {% endif %}
+
+        <h1>{{ product.name }}</h1>
+        
+        <div class="price-section">
+            <div class="current-price">R$ {{ product.price|intcomma }}</div>
+            <p class="installments">Em até 10x de R$ {{ product.get_parcela_10x|floatformat:2 }} sem juros</p>
+        </div>
+
+        <form action="{% url 'add_to_cart' product.id %}" method="post" id="addToCartForm" onsubmit="return validateForm()">
+            {% csrf_token %}
+            <input type="hidden" name="lens_id" id="selected_lens_id" value="">
+
+            {% if product.lens_images.exists %}
+                <input type="hidden" id="has_lenses" value="true">
+                
+                <div class="variant-selector">
+                    <h3>Escolha a Lente: <span style="color:red">*</span></h3>
+                    <div class="variant-options" style="flex-wrap: wrap;">
+                        
+                        {% for variation in product.lens_images.all %}
+                            {% if variation.lens.is_active %}
+                                <button type="button" 
+                                        class="capacity-button" 
+                                        onclick="changeImage('{{ variation.image.url }}', this, '{{ variation.lens.id }}')">
+                                    {{ variation.lens.name }}
+                                </button>
+                            {% endif %}
+                        {% endfor %}
+                        
+                    </div>
+                    <p id="lens-error" style="color: red; display: none; font-size: 0.9rem; margin-top: 5px;">
+                        ⚠️ Por favor, selecione uma lente para continuar.
+                    </p>
+                </div>
+            {% endif %}
+
+            {% if product.available_rubbers.exists %}
+                <div class="variant-selector">
+                    <h3>Cor da Borrachinha:</h3>
+                    <div class="variant-options">
+                        {% for rubber in product.available_rubbers.all %}
+                            {% if rubber.is_active %}
+                                <div class="color-swatch" 
+                                     style="background-color: {{ rubber.color_code }};" 
+                                     title="{{ rubber.name }}"
+                                     onclick="selectColor(this)">
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <button type="submit" class="buy-button">Adicionar ao Carrinho</button>
+        </form>
+
+        <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid #e1e1e1;">
+            <h3>Descrição</h3>
+            <div style="margin-top: 1rem; line-height: 1.6; color: #333;">
+                {{ product.description|safe }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function changeImage(imageUrl, btnElement, lensId) {
+        // 1. Troca a imagem
+        const mainImg = document.getElementById('mainProductImage');
+        if (mainImg) {
+            mainImg.src = imageUrl;
+        }
+
+        // 2. PREENCHE O INPUT ESCONDIDO (Essencial para o carrinho)
+        document.getElementById('selected_lens_id').value = lensId;
+
+        // 3. Muda o visual do botão
+        const allButtons = btnElement.parentElement.querySelectorAll('.capacity-button');
+        allButtons.forEach(btn => btn.classList.remove('active'));
+        btnElement.classList.add('active');
+
+        // 4. Esconde erro se existir
+        document.getElementById('lens-error').style.display = 'none';
+    }
+
+    function selectColor(colorElement) {
+        const allColors = colorElement.parentElement.querySelectorAll('.color-swatch');
+        allColors.forEach(c => c.classList.remove('active'));
+        colorElement.classList.add('active');
+    }
+
+    // --- FUNÇÃO DE VALIDAÇÃO ---
+    function validateForm() {
+        const hasLenses = document.getElementById('has_lenses');
+        const selectedLens = document.getElementById('selected_lens_id').value;
+
+        // Se o produto TEM lentes cadastradas E nenhuma foi selecionada
+        if (hasLenses && selectedLens === "") {
+            // Mostra mensagem de erro
+            document.getElementById('lens-error').style.display = 'block';
+            alert("Por favor, escolha uma cor de lente antes de adicionar ao carrinho!");
+            return false; // Impede o envio do formulário
+        }
+        return true; // Permite o envio
+    }
+</script>
+{% endblock %}
