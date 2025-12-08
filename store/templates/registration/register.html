@@ -69,6 +69,15 @@
 
     .help-text { font-size: 0.8rem; color: #86868b; display: block; margin-top: 4px; }
     
+    /* Estilo para as mensagens de erro */
+    .field-error {
+        color: #d32f2f; /* Vermelho erro */
+        font-size: 0.85rem;
+        margin-top: 4px;
+        display: block;
+        font-weight: 500;
+    }
+
     .login-link { text-align: center; margin-top: 2rem; font-size: 0.95rem; }
     .login-link a { color: #0071e3; font-weight: 600; text-decoration: none; }
 </style>
@@ -84,7 +93,7 @@
             {% csrf_token %}
             
             {% if form.non_field_errors %}
-                <div style="color: red; margin-bottom: 1rem;">
+                <div style="background-color: #ffebee; color: #c62828; padding: 10px; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.9rem;">
                     {{ form.non_field_errors }}
                 </div>
             {% endif %}
@@ -93,33 +102,52 @@
                 <div class="form-group">
                     <label class="form-label">Nome</label>
                     {{ form.first_name }}
+                    {% for error in form.first_name.errors %}
+                        <span class="field-error">{{ error }}</span>
+                    {% endfor %}
                 </div>
                 <div class="form-group">
                     <label class="form-label">Sobrenome</label>
                     {{ form.last_name }}
+                    {% for error in form.last_name.errors %}
+                        <span class="field-error">{{ error }}</span>
+                    {% endfor %}
                 </div>
             </div>
 
             <div class="form-group">
                 <label class="form-label">E-mail (Será seu login)</label>
                 {{ form.email }}
+                {% for error in form.email.errors %}
+                    <span class="field-error">{{ error }}</span>
+                {% endfor %}
             </div>
 
             <div class="form-group">
                 <label class="form-label">Telefone</label>
                 {{ form.phone }}
+                {% for error in form.phone.errors %}
+                    <span class="field-error">{{ error }}</span>
+                {% endfor %}
             </div>
 
             <div class="form-group">
                 <label class="form-label">Senha</label>
-                {{ form.password1 }} {% if form.password1.help_text %}
+                {{ form.password1 }} 
+                {% if form.password1.help_text %}
                     <span class="help-text">{{ form.password1.help_text }}</span>
                 {% endif %}
+                {% for error in form.password1.errors %}
+                    <span class="field-error">{{ error }}</span>
+                {% endfor %}
             </div>
             
             <div class="form-group">
                 <label class="form-label">Confirmar Senha</label>
                 {{ form.password2 }}
+                {% for error in form.password2.errors %}
+                    <span class="field-error">{{ error }}</span>
+                {% endfor %}
             </div>
 
             <button type="submit" class="btn-submit">Cadastrar</button>
