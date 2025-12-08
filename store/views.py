@@ -10,6 +10,7 @@ from .models import Order, OrderItem # Importe LensType aqui
 from .forms import UserUpdateForm # Importe o form novo
 import mercadopago
 from django.conf import settings
+
 # --- VIEWS DE PRODUTOS ---
 # Em store/views.py
 
@@ -204,7 +205,11 @@ def register_or_login(request):
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
+            
+            # --- CORREÇÃO: Definimos o backend explicitamente ---
+            # Dizemos ao Django que esse login é via "ModelBackend" (o padrão do banco de dados)
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+            
             return redirect('product_list')
     else:
         form = CustomUserCreationForm()
