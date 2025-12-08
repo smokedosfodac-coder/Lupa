@@ -174,7 +174,8 @@
                 <span>R$ {{ final_price|intcomma }}</span>
             </div>
 
-            <button class="checkout-btn">Finalizar Compra</button>
+            <a href="{% url 'checkout' %}" class="checkout-btn">Finalizar Compra</a>
+            
             <a href="{% url 'product_list' %}" style="display:block; text-align:center; margin-top:1rem; color:#0071e3;">Continuar Comprando</a>
         </div>
 
