@@ -9,12 +9,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-=&&x8!-^^%_!4jv!l8cbj1mhkd_8d4rtu52q!yq)+z&x%p^wm3'
+SECRET_KEY = 'django-insecure-sua-chave-secreta-aqui-ou-a-que-estava-antes'
 
-# SECURITY WARNING: don't run with debug turned on in production!
+# 2. DEBUG
+# Mantenha True por enquanto para vermos se aparece algum erro na tela.
+# Quando o site estiver 100% pronto, mudamos para False.
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# 3. HOSTS PERMITIDOS
+ALLOWED_HOSTS = ['gabrielftrin.pythonanywhere.com', 'localhost', '127.0.0.1']
+
+# 4. ORIGENS CONFIÁVEIS (Para o Login/Formulários funcionarem)
+# Atenção: Tem que ter o "https://" na frente!
+CSRF_TRUSTED_ORIGINS = ['https://gabrielftrin.pythonanywhere.com']
+
+# SECURITY WARNING: don't run with debug turned on in production
 
 
 # Application definition
@@ -34,6 +43,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # <--- ADICIONE ESTA LINHA LOGO APÓS O SECURITY
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -113,7 +123,9 @@ THOUSAND_SEPARATOR = '.'
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') # Pasta onde o servidor vai juntar tudo
 
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
