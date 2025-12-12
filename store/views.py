@@ -367,7 +367,7 @@ import mercadopago
 
 def gerar_link_pagamento(order):
     # Seu Token (Mantenha o que você criou)
-    sdk = mercadopago.SDK("APP_USR-4810181241624335-120721-387a63fee8df23b6fd28fd1af75c0673-2684151531")
+    sdk = mercadopago.SDK("APP_USR-3281475695211008-091218-3a3ee5ad595743568ccd69ca1a1a8f34-2681741102")
 
     # 1. Monta os itens
     items = []
