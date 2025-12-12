@@ -1,17 +1,5 @@
-# Django
-*.log
-*.pot
-*.pyc
-__pycache__/
-local_settings.py
 db.sqlite3
 media/
-staticfiles/
-
-# Ambientes virtuais
-venv/
-env/
-.env
-
-# Editor
-.vscode/
+__pycache__/
+*.pyc
+.DS_Store
