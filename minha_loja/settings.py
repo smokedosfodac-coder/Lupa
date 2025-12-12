@@ -187,12 +187,13 @@ print(f"DEBUG: O MEDIA_ROOT está apontando para: {MEDIA_ROOT}")
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Quando for colocar no ar de verdade, troque por:
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.gmail.com'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'seuemail@gmail.com'
-# EMAIL_HOST_PASSWORD = 'senha-de-app-google'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'gabrielferreira2840@gmail.com'
+EMAIL_HOST_PASSWORD = 'bagr reer sbhb yiff'
+
 
 # Configuração para permitir Login com E-mail
 AUTHENTICATION_BACKENDS = [

@@ -10,7 +10,7 @@ from .models import Order, OrderItem # Importe LensType aqui
 from .forms import UserUpdateForm # Importe o form novo
 import mercadopago
 from django.conf import settings
-
+from django.core.mail import send_mail
 # --- VIEWS DE PRODUTOS ---
 # Em store/views.py
 
@@ -488,3 +488,99 @@ def pagamento_pix_view(request, order_id):
         'copia_cola': copia_cola,
         'imagem_b64': imagem_b64
     })
+
+@csrf_exempt
+@require_POST
+def mp_webhook(request):
+    topic = request.GET.get("topic") or request.GET.get("type")
+    resource_id = request.GET.get("id") or request.GET.get("data.id")
+
+    if topic == "payment":
+        sdk = mercadopago.SDK("SEU_ACCESS_TOKEN_DE_PRODUCAO_AQUI") # Token PROD
+        
+        payment_info = sdk.payment().get(resource_id)
+        payment = payment_info["response"]
+        
+        order_id = payment["external_reference"]
+        status = payment["status"]
+
+        try:
+            order = Order.objects.get(id=order_id)
+            
+            # Só envia email se o pedido mudar de 'pendente' para 'pago'
+            # (Isso evita enviar email duplo se o MP avisar duas vezes)
+            if status == "approved" and order.status != 'pago':
+                order.status = "pago"
+                order.save()
+                
+                # --- 1. MONTA O EMAIL PARA VOCÊ (ADMIN) ---
+                itens_texto = ""
+                for item in order.items.all():
+                    itens_texto += f"- {item.product.name} ({item.lens_name}) | Qtd: {item.quantity}\n"
+
+                msg_admin = f"""
+                🚀 NOVA VENDA APROVADA! (#{order.id})
+
+                COMPRADOR:
+                Nome: {order.full_name}
+                Email: {order.email}
+                Telefone: {order.phone}
+
+                ENTREGA:
+                {order.address}
+
+                ITENS VENDIDOS:
+                {itens_texto}
+
+                VALOR TOTAL: R$ {order.total_price}
+                
+                Corre separar o pedido! 🏃‍♂️
+                """
+
+                try:
+                    send_mail(
+                        subject=f"Nova Venda! Pedido #{order.id}",
+                        message=msg_admin,
+                        from_email=settings.EMAIL_HOST_USER,
+                        recipient_list=['gabrielferreira2840@gmail.com'], # Para onde vai
+                        fail_silently=False,
+                    )
+                except Exception as e:
+                    print(f"Erro ao enviar email admin: {e}")
+
+                # --- 2. MONTA O EMAIL PARA O CLIENTE ---
+                msg_cliente = f"""
+                Olá, {order.full_name.split()[0]}! 👋
+
+                Seu pagamento foi confirmado com sucesso!
+                Obrigado por comprar na nossa loja.
+
+                Seu pedido #{order.id} já está sendo separado com carinho.
+                
+                Detalhes da entrega:
+                {order.address}
+
+                Qualquer dúvida, responda este email.
+                """
+
+                try:
+                    send_mail(
+                        subject=f"Pedido #{order.id} Confirmado! 🎉",
+                        message=msg_cliente,
+                        from_email=settings.EMAIL_HOST_USER,
+                        recipient_list=[order.email], # Para o email do cliente
+                        fail_silently=True,
+                    )
+                except:
+                    pass # Se der erro no email do cliente, não faz mal, o pedido já tá pago
+
+                print(f"PEDIDO {order_id} PAGO E EMAILS ENVIADOS!")
+                
+            elif status == "failure" or status == "cancelled":
+                order.status = "cancelado"
+                order.save()
+                
+        except Order.DoesNotExist:
+            pass
+
+    return HttpResponse(status=200)
