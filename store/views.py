@@ -11,6 +11,8 @@ from .forms import UserUpdateForm # Importe o form novo
 import mercadopago
 from django.conf import settings
 from django.core.mail import send_mail
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 # --- VIEWS DE PRODUTOS ---
 # Em store/views.py
 
@@ -287,26 +289,20 @@ def checkout_view(request):
                     lens_name=item['lens'], price=item['price'], quantity=item['qty']
                 )
 
-            # Limpa o carrinho
             request.session['cart'] = {}
 
-            # --- AQUI ESTÁ A MÁGICA DA ESCOLHA ---
-            payment_method = request.POST.get('payment_method')
-
-            if payment_method == 'pix':
-                # Se for PIX, manda pra tela interna de QR Code
-                return redirect('pagamento_pix', order_id=order.id)
-            else:
-                # Se for Cartão/Boleto, manda pro Mercado Pago externo
-                try:
-                    payment_url = gerar_link_pagamento(order)
-                    return redirect(payment_url)
-                except Exception as e:
-                    print(f"Erro MP: {e}")
-                    return redirect('order_detail', order_id=order.id)
+            # --- AQUI MUDOU: SEM IF/ELSE, VAI DIRETO PRO MERCADO PAGO ---
+            try:
+                # Manda todo mundo para o link do Checkout Pro (Lá eles escolhem Pix ou Cartão)
+                payment_url = gerar_link_pagamento(order)
+                return redirect(payment_url)
+            except Exception as e:
+                print(f"Erro MP: {e}")
+                return redirect('order_detail', order_id=order.id)
+            # ------------------------------------------------------------
     
     else:
-        # GET: Preenche formulário com dados salvos
+        # GET: Preenche formulário
         initial_data = {
             'rua': request.user.rua,
             'numero': request.user.numero,
@@ -365,129 +361,6 @@ def logout_view(request):
 
 import mercadopago
 
-def gerar_link_pagamento(order):
-    # Seu Token (Mantenha o que você criou)
-    sdk = mercadopago.SDK("APP_USR-3281475695211008-091218-3a3ee5ad595743568ccd69ca1a1a8f34-2681741102")
-
-    # 1. Monta os itens
-    items = []
-    for item in order.items.all():
-        # Proteção: Garante que o preço nunca é Zero ou Negativo
-        preco = float(item.price)
-        if preco <= 0:
-            preco = 1.00 # MP não aceita valor 0, coloca 1 real de segurança
-
-        items.append({
-            "id": str(item.product.id),
-            "title": str(item.product.name)[:250], # Limita tamanho do nome
-            "quantity": int(item.quantity),
-            "currency_id": "BRL",
-            "unit_price": preco
-        })
-
-    # 2. Dados da preferência
-    preference_data = {
-        "items": items,
-        "payer": {
-            "email": "test_user_123456@test.com", # Email falso para teste local
-            "first_name": order.user.first_name,
-            "last_name": order.user.last_name
-        },
-        "external_reference": str(order.id),
-        "back_urls": {
-        "success": "https://gabrielftrin.pythonanywhere.com/minha-conta/",
-        "failure": "https://gabrielftrin.pythonanywhere.com/minha-conta/",
-        "pending": "https://gabrielftrin.pythonanywhere.com/minha-conta/"
-        },
-        "auto_return": "approved" # <--- AGORA PODE FICAR DESCOMENTADO
-    }
-
-    # 3. Criação e DIAGNÓSTICO DE ERRO
-    preference_response = sdk.preference().create(preference_data)
-    
-    # --- AQUI ESTÁ O SEGREDO: IMPRIMIR A RESPOSTA NO TERMINAL ---
-    print("\n" + "="*50)
-    print("STATUS MP:", preference_response.get("status"))
-    print("RESPOSTA COMPLETA:", preference_response)
-    print("="*50 + "\n")
-
-    # Verifica se deu certo (Status 201 = Criado)
-    if preference_response.get("status") == 201:
-        return preference_response["response"]["init_point"]
-    else:
-        # Se falhou, lança o erro para a gente ver
-        raise Exception(f"Erro MP: {preference_response.get('response')}")
-
-# --- ATUALIZANDO A VIEW DE DETALHE DO PEDIDO ---
-@login_required
-def order_detail(request, order_id):
-    order = get_object_or_404(Order, id=order_id, user=request.user)
-    
-    payment_url = None
-    
-    # Só gera link se o status for pendente
-    if order.status == 'pendente':
-        try:
-            payment_url = gerar_link_pagamento(order)
-        except Exception as e:
-            print(f"Erro ao gerar link MP: {e}")
-
-    return render(request, 'order_detail.html', {
-        'order': order,
-        'payment_url': payment_url # Enviamos o link para o HTML
-    })
-
-def gerar_pagamento_pix(order):
-    # SEU TOKEN (O mesmo que você usou na outra função)
-    sdk = mercadopago.SDK("APP_USR-4810181241624335-120721-387a63fee8df23b6fd28fd1af75c0673-2684151531")
-
-    payment_data = {
-        "transaction_amount": float(order.total_price),
-        "description": f"Pedido #{order.id} - Minha Loja",
-        "payment_method_id": "pix",
-        "payer": {
-            "email": "test_user_123456@test.com", # Email fake para evitar erro de autopagamento
-            "first_name": order.user.first_name,
-            "last_name": order.user.last_name,
-            "identification": {
-                "type": "CPF",
-                "number": "19119119100"
-            }
-        },
-        "external_reference": str(order.id)
-    }
-
-    payment_response = sdk.payment().create(payment_data)
-    
-    # Debug para caso dê erro
-    if payment_response["status"] != 201:
-        print("ERRO PIX:", payment_response)
-        raise Exception("Erro ao gerar Pix no Mercado Pago")
-
-    payment = payment_response["response"]
-
-    # Pega os dados do QR Code
-    qr_code = payment['point_of_interaction']['transaction_data']['qr_code']
-    qr_code_base64 = payment['point_of_interaction']['transaction_data']['qr_code_base64']
-    
-    return qr_code, qr_code_base64
-
-@login_required
-def pagamento_pix_view(request, order_id):
-    order = get_object_or_404(Order, id=order_id, user=request.user)
-    
-    try:
-        copia_cola, imagem_b64 = gerar_pagamento_pix(order)
-    except Exception as e:
-        print(f"Erro ao gerar Pix: {e}")
-        # Se der erro, volta para os detalhes do pedido
-        return redirect('order_detail', order_id=order.id)
-
-    return render(request, 'pix_payment.html', {
-        'order': order,
-        'copia_cola': copia_cola,
-        'imagem_b64': imagem_b64
-    })
 
 @csrf_exempt
 @require_POST

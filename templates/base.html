@@ -133,98 +133,123 @@
 
 @media (max-width: 768px) {
 
-        /* 1. Ajustes Gerais de Espaço */
-        body {
-            font-size: 14px;
-            padding-bottom: 20px;
+        /* --- 1. TIPOGRAFIA E BASE --- */
+        html, body {
+            font-size: 15px; /* Tamanho base ligeiramente maior para leitura */
+            overflow-x: hidden; /* Evita rolagem horizontal indesejada */
         }
-        
+
+        /* Reduz o tamanho dos títulos para não gritarem na tela pequena */
+        h1 { font-size: 1.8rem !important; margin-bottom: 1rem; }
+        h2 { font-size: 1.5rem !important; }
+        h3 { font-size: 1.3rem !important; }
+
+        /* --- 2. LAYOUT E ESPAÇAMENTO --- */
+        /* Garante que os containers usem a largura total com um pequeno respiro nas bordas */
         .container, .cart-container, .auth-card, div[style*="max-width"] {
-            width: 95% !important; /* Usa a largura quase total da tela */
-            padding: 1rem !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            padding-left: 15px !important;
+            padding-right: 15px !important;
             margin: 1rem auto !important;
+            box-sizing: border-box;
         }
 
-        /* 2. Cabeçalho (Logo em cima, Busca embaixo) */
+        /* Cabeçalho mais compacto */
         .header-main {
-            flex-direction: column; /* Empilha os itens */
-            gap: 15px;
-            padding: 15px;
+            flex-direction: column;
+            gap: 10px;
+            padding: 10px 15px;
         }
         
-        .search-bar {
-            width: 100%; 
-            order: 3; /* Joga a busca para baixo */
-        }
-        
-        .search-bar input {
-            width: 100%; /* Campo de busca ocupa tudo */
-        }
+        .search-bar { width: 100%; order: 3; }
+        .search-bar input { width: 100%; height: 44px; /* Altura boa para o dedo */ }
+        .user-actions { width: 100%; justify-content: space-around; padding: 10px 0; }
 
-        .user-actions {
-            width: 100%;
-            justify-content: space-between; /* Espalha os ícones */
-        }
-
-        /* 3. Vitrine de Produtos (2 por linha) */
+        /* --- 3. VITRINE (HOME) --- */
         .product-grid {
-            grid-template-columns: 1fr 1fr !important; /* 2 colunas */
-            gap: 10px !important;
+            /* Mantém 2 colunas, mas com espaçamento melhor */
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 15px !important;
+            padding: 0 5px;
+        }
+        
+        .product-card {
+            min-height: auto;
+            padding: 10px;
         }
         
         .product-card img {
-            height: 150px; /* Imagem menor para caber */
+            height: 140px; /* Um pouco menor para equilibrar */
+            object-fit: contain;
         }
         
-        .cta-button {
-            padding: 10px;
-            font-size: 0.9rem;
+        /* Botões fáceis de clicar */
+        .cta-button, button[type="submit"] {
+            padding: 12px;
+            font-size: 1rem;
+            min-height: 44px; /* Altura mínima recomendada pela Apple/Google */
         }
 
-        /* 4. Carrinho de Compras */
-        .cart-header {
-            flex-direction: column;
-            align-items: flex-start;
+        /* --- 4. PÁGINA DO PRODUTO (FORÇA BRUTA) --- */
+        /* Força o container do detalhe do produto a ficar vertical */
+        .product-detail-container {
+            flex-direction: column !important;
+            gap: 20px !important;
+            margin-top: 10px !important;
+        }
+
+        /* Força a imagem e o texto a ocuparem 100% da largura */
+        .product-image-section, .product-info-section {
+            width: 100% !important;
+            min-width: 0 !important; /* Reseta larguras mínimas antigas */
+            flex: none !important;
+        }
+
+        .product-image-section img {
+            max-height: 350px; /* Limita altura da imagem no celular */
         }
         
+        .product-title { font-size: 1.6rem !important; }
+        .product-price { font-size: 2rem !important; margin: 10px 0; }
+
+        /* --- 5. CARRINHO E CHECKOUT --- */
+        .cart-header { display: none; /* Esconde cabeçalho da tabela no mobile */ }
+        
         .cart-item {
-            flex-direction: column; /* Foto em cima, texto embaixo */
-            align-items: flex-start;
+            flex-direction: column;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
             position: relative;
         }
         
-        .cart-item img {
-            width: 60px;
-            height: 60px;
-            margin-bottom: 10px;
-        }
-        
-        .item-price {
-            margin-top: 10px;
-            font-size: 1.2rem;
-            align-self: flex-end; /* Preço no canto direito */
-        }
+        .cart-item img { margin-bottom: 10px; }
+        .item-details { text-align: center; width: 100%; }
+        .item-price { font-size: 1.3rem; color: #0071e3; margin-top: 10px; }
         
         .remove-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 0; right: 0;
+            padding: 10px; font-size: 1.2rem;
         }
 
-        /* 5. Formulários (Endereço e Login) */
-        .form-row {
-            grid-template-columns: 1fr !important; /* Uma coluna só */
-            gap: 0 !important;
-        }
-        
-        /* Força grids inline a ficarem verticais */
-        div[style*="grid-template-columns"] {
+        /* Formulários em uma coluna */
+        .form-row, div[style*="grid-template-columns"] {
             grid-template-columns: 1fr !important;
+            gap: 10px !important;
         }
 
-        /* 6. Evita zoom chato no iPhone ao clicar no input */
+        /* --- 6. MELHORIAS DE TOQUE (USABILIDADE) --- */
+        /* Evita zoom automático no iPhone ao clicar em inputs */
         input, select, textarea {
             font-size: 16px !important;
+            padding: 12px !important; /* Mais espaço interno */
+        }
+        
+        /* Aumenta o tamanho dos radio buttons (lentes, pagamento) */
+        input[type="radio"] {
+            transform: scale(1.3);
+            margin-right: 10px;
         }
     }
     

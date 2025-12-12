@@ -24,6 +24,5 @@ urlpatterns = [
     path('pedido/<int:order_id>/', views.order_detail, name='order_detail'),
     # Adicione na lista de urlpatterns
     path('minha-conta/', views.profile_view, name='profile'),
-    path('pagamento/pix/<int:order_id>/', views.pagamento_pix_view, name='pagamento_pix'),
 ]
 
