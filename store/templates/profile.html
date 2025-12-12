@@ -1,232 +1,47 @@
 {% extends 'base.html' %}
 {% load humanize %}
 
-{% block title %}Minha Conta | Minha Loja{% endblock %}
+{% block title %}Minha Conta{% endblock %}
 
 {% block content %}
-<style>
-    /* Layout Geral */
-    .profile-container {
-        max-width: 1100px;
-        margin: 4rem auto;
-        padding: 0 2rem;
-        display: grid;
-        grid-template-columns: 1fr 2fr; /* Coluna esquerda menor, direita maior */
-        gap: 3rem;
-    }
+<div style="max-width: 900px; margin: 3rem auto; padding: 2rem;">
+    <h1 style="margin-bottom: 2rem;">Olá, {{ user.first_name }} 👋</h1>
 
-    /* Cartão Padrão (Usado para os dois lados) */
-    .profile-card {
-        background: #fff;
-        padding: 2.5rem;
-        border-radius: 24px; /* Bem arredondado */
-        box-shadow: 0 10px 40px rgba(0,0,0,0.06); /* Sombra suave e moderna */
-        height: fit-content;
-    }
-
-    .profile-card h2 {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin-bottom: 1.5rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid #f0f0f0;
-        color: #1d1d1f;
-    }
-
-    /* Estilização do Formulário */
-    .form-group {
-        margin-bottom: 1.2rem;
-    }
-
-    .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-    }
-
-    .form-label {
-        display: block;
-        margin-bottom: 0.5rem;
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: #424245;
-    }
-
-    .form-input {
-        width: 100%;
-        padding: 12px 16px;
-        border: 1px solid #d2d2d7;
-        border-radius: 12px;
-        font-size: 1rem;
-        color: #1d1d1f;
-        background-color: #fafafa;
-        transition: all 0.2s ease;
-    }
-
-    .form-input:focus {
-        background-color: #fff;
-        border-color: #0071e3;
-        box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1); /* Brilho azul ao clicar */
-        outline: none;
-    }
-
-    .save-btn {
-        width: 100%;
-        padding: 14px;
-        background-color: #0071e3; /* Azul Apple */
-        color: white;
-        border: none;
-        border-radius: 12px;
-        font-size: 1rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background 0.2s;
-        margin-top: 1rem;
-    }
-
-    .save-btn:hover {
-        background-color: #0077ed;
-    }
-
-    .logout-link {
-        display: block;
-        text-align: center;
-        margin-top: 1.5rem;
-        color: #ff3b30;
-        font-size: 0.9rem;
-        font-weight: 500;
-        text-decoration: none;
-        transition: opacity 0.2s;
-    }
-    
-    .logout-link:hover {
-        opacity: 0.8;
-        text-decoration: underline;
-    }
-
-    /* Estilização dos Pedidos (Lado Direito) */
-    .order-card {
-        background: #fbfbfd;
-        padding: 1.5rem;
-        border-radius: 16px;
-        margin-bottom: 1rem;
-        border: 1px solid #e1e1e1;
-        transition: transform 0.2s;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .order-card:hover {
-        border-color: #0071e3;
-        transform: translateY(-2px);
-    }
-
-    .order-header h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.2rem; }
-    .order-date { color: #86868b; font-size: 0.85rem; }
-    
-    .status-badge {
-        display: inline-block;
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        margin-top: 0.5rem;
-    }
-    /* Cores dos Status */
-    .status-entregue { background: #e8f5e9; color: #1b5e20; }
-    .status-pendente { background: #fff3e0; color: #e65100; }
-    .status-enviado { background: #e3f2fd; color: #0d47a1; }
-    .status-cancelado { background: #ffebee; color: #c62828; }
-
-    .order-price { font-size: 1.1rem; font-weight: 700; color: #1d1d1f; }
-    .btn-details { color: #0071e3; font-size: 0.9rem; font-weight: 500; text-decoration: none; }
-
-    /* Responsivo para celular */
-    @media (max-width: 768px) {
-        .profile-container { grid-template-columns: 1fr; gap: 2rem; }
-        .form-row { grid-template-columns: 1fr; }
-    }
-</style>
-
-<div class="profile-container">
-    
-    <div class="profile-card">
-        <h2>Meus Dados</h2>
-        <form method="post">
-            {% csrf_token %}
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">Nome</label>
-                    {{ form.first_name }}
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Sobrenome</label>
-                    {{ form.last_name }}
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">E-mail</label>
-                {{ form.email }}
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Telefone</label>
-                {{ form.phone }}
-            </div>
-
-            <button type="submit" class="save-btn">Salvar Alterações</button>
-        </form>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
         
-        <a href="{% url 'logout' %}" class="logout-link">Sair da Conta</a>
-    </div>
+        <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+            <h2 style="font-size: 1.5rem; margin-bottom: 1rem;">Meus Dados</h2>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" style="background: #0071e3; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold;">
+                    Salvar Alterações
+                </button>
+            </form>
+        </div>
 
-    <div class="profile-card">
-        <h2>Meus Pedidos</h2>
-        
-        {% if orders %}
+        <div>
+            <h2 style="font-size: 1.5rem; margin-bottom: 1rem;">Meus Pedidos</h2>
             {% for order in orders %}
-                <div class="order-card">
-                    <div class="order-header">
-                        <h3>Pedido #{{ order.id }}</h3>
-                        <span class="order-date">{{ order.created_at|date:"d de F, Y" }}</span>
-                        <br>
-                        
-                        <span class="status-badge 
-                            {% if order.status == 'entregue' %}status-entregue
-                            {% elif order.status == 'cancelado' %}status-cancelado
-                            {% elif order.status == 'enviado' %}status-enviado
-                            {% else %}status-pendente{% endif %}">
-                            {{ order.get_status_display }}
-                        </span>
+                <div style="background: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem; border: 1px solid #eee;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <strong>Pedido #{{ order.id }}</strong>
+                        <span style="background: #eee; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">{{ order.get_status_display }}</span>
                     </div>
-                    
-                    <div style="text-align: right;">
-                        <div class="order-price">R$ {{ order.total_price|intcomma }}</div>
-                        <a href="{% url 'order_detail' order.id %}" class="btn-details">Ver detalhes &rarr;</a>
-                    </div>
+                    <p style="color: #666; font-size: 0.9rem;">{{ order.created_at|date:"d/m/Y" }}</p>
+                    <p style="font-weight: bold; margin-top: 5px;">R$ {{ order.total_price|intcomma }}</p>
+                    <a href="{% url 'order_detail' order.id %}" style="display: block; margin-top: 10px; color: #0071e3; text-decoration: none; font-size: 0.9rem;">Ver Detalhes →</a>
                 </div>
+            {% empty %}
+                <p>Você ainda não fez pedidos.</p>
             {% endfor %}
-        {% else %}
-            <div style="text-align: center; padding: 3rem 0; color: #86868b;">
-                <p style="margin-bottom: 1rem;">Você ainda não fez nenhum pedido.</p>
-                <a href="{% url 'product_list' %}" style="color: #0071e3; font-weight: 500;">Ir para a loja</a>
-            </div>
-        {% endif %}
+        </div>
     </div>
 </div>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        // Pega todos os inputs dentro do formulário e adiciona a classe 'form-input'
-        const inputs = document.querySelectorAll('.profile-card input');
-        inputs.forEach(input => {
-            input.classList.add('form-input');
-        });
-    });
-</script>
-
+<style>
+    /* Estilo rápido para o form ficar bonito */
+    input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+    label { display: block; margin-bottom: 5px; font-weight: 600; color: #333; }
+</style>
 {% endblock %}

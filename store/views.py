@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import login, logout
 from django.db.models import Q
 from .models import Product, Category, ContactMessage
-from .forms import CustomUserCreationForm, ContactForm
+from .forms import CustomUserCreationForm, ContactForm, AddressForm
 from .models import LensType
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -224,81 +224,135 @@ def checkout_view(request):
     if not cart:
         return redirect('product_list')
 
-    # 1. Calcula totais (Recopia a lógica do carrinho rapidamente)
-    total_price = 0
-    promo_items = []
-    final_items = []
+    if request.method == 'POST':
+        form = AddressForm(request.POST)
+        if form.is_valid():
+            # 1. Salva endereço no usuário
+            dados = form.cleaned_data
+            user = request.user
+            user.rua = dados['rua']
+            user.numero = dados['numero']
+            user.complemento = dados['complemento']
+            user.bairro = dados['bairro']
+            user.cidade = dados['cidade']
+            user.estado = dados['estado']
+            user.cep = dados['cep']
+            user.save()
 
-    for key, qtd in cart.items():
-        try:
-            p_id, l_id = key.split('-')
-            product = Product.objects.get(id=p_id)
-            lens_name = "Padrão"
-            
-            if l_id and l_id != 'None':
-                try: 
-                    lens_name = LensType.objects.get(id=l_id).name
+            endereco_completo = f"{dados['rua']}, {dados['numero']} - {dados['bairro']}, {dados['cidade']}/{dados['estado']} - CEP: {dados['cep']}"
+            if dados['complemento']:
+                endereco_completo += f" ({dados['complemento']})"
+
+            # 2. Calcula Totais
+            total_price = 0
+            promo_items = []
+            final_items = []
+
+            for key, qtd in cart.items():
+                try:
+                    p_id, l_id = key.split('-')
+                    product = Product.objects.get(id=p_id)
+                    lens_name = "Padrão"
+                    if l_id and l_id != 'None':
+                        try: lens_name = LensType.objects.get(id=l_id).name
+                        except: pass
+                    
+                    total_price += product.price * qtd
+                    final_items.append({'product': product, 'qty': qtd, 'price': product.price, 'lens': lens_name})
+                    if product.is_promo_buy_1_get_2:
+                        for _ in range(qtd): promo_items.append(product.price)
                 except: pass
-            
-            total_price += product.price * qtd
-            
-            # Adiciona na lista para salvar no banco depois
-            final_items.append({
-                'product': product, 'qty': qtd, 'price': product.price, 'lens': lens_name
-            })
 
-            if product.is_promo_buy_1_get_2:
-                for _ in range(qtd): promo_items.append(product.price)
-        except: pass
+            discount = 0
+            if len(promo_items) >= 2:
+                promo_items.sort()
+                for i in range(len(promo_items) // 2): discount += promo_items[i]
+            
+            final_total = total_price - discount
 
-    # Aplica desconto
-    discount = 0
-    if len(promo_items) >= 2:
-        promo_items.sort()
-        for i in range(len(promo_items) // 2): discount += promo_items[i]
+            # 3. Cria o Pedido
+            order = Order.objects.create(
+                user=request.user,
+                full_name=f"{request.user.first_name} {request.user.last_name}",
+                email=request.user.email,
+                phone=request.user.phone or "",
+                address=endereco_completo,
+                total_price=final_total,
+                status='pendente'
+            )
+
+            for item in final_items:
+                OrderItem.objects.create(
+                    order=order, product=item['product'], product_name=item['product'].name,
+                    lens_name=item['lens'], price=item['price'], quantity=item['qty']
+                )
+
+            # Limpa o carrinho
+            request.session['cart'] = {}
+
+            # --- AQUI ESTÁ A MÁGICA DA ESCOLHA ---
+            payment_method = request.POST.get('payment_method')
+
+            if payment_method == 'pix':
+                # Se for PIX, manda pra tela interna de QR Code
+                return redirect('pagamento_pix', order_id=order.id)
+            else:
+                # Se for Cartão/Boleto, manda pro Mercado Pago externo
+                try:
+                    payment_url = gerar_link_pagamento(order)
+                    return redirect(payment_url)
+                except Exception as e:
+                    print(f"Erro MP: {e}")
+                    return redirect('order_detail', order_id=order.id)
     
-    final_total = total_price - discount
+    else:
+        # GET: Preenche formulário com dados salvos
+        initial_data = {
+            'rua': request.user.rua,
+            'numero': request.user.numero,
+            'complemento': request.user.complemento,
+            'bairro': request.user.bairro,
+            'cidade': request.user.cidade,
+            'estado': request.user.estado,
+            'cep': request.user.cep,
+        }
+        form = AddressForm(initial=initial_data)
 
-    # 2. Cria o Pedido no Banco
-    order = Order.objects.create(
-        user=request.user,
-        full_name=f"{request.user.first_name} {request.user.last_name}",
-        email=request.user.email,
-        phone=request.user.phone or "",
-        address="Endereço não cadastrado (Atualizar no perfil)", # Idealmente pediria no checkout
-        total_price=final_total,
-        status='pendente'
-    )
-
-    # 3. Cria os Itens
-    for item in final_items:
-        OrderItem.objects.create(
-            order=order,
-            product=item['product'],
-            product_name=item['product'].name,
-            lens_name=item['lens'],
-            price=item['price'],
-            quantity=item['qty']
-        )
-
-    # 4. Limpa o carrinho e redireciona
-    request.session['cart'] = {}
-    return redirect('order_detail', order_id=order.id)
+    return render(request, 'checkout.html', {'form': form})
 
 @login_required
 def profile_view(request):
-    user = request.user
-    orders = Order.objects.filter(user=user).order_by('-created_at')
-
     if request.method == 'POST':
-        form = UserUpdateForm(request.POST, instance=user)
+        form = AddressForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('profile_view')
+            dados = form.cleaned_data
+            user = request.user
+            user.rua = dados['rua']
+            user.numero = dados['numero']
+            user.complemento = dados['complemento']
+            user.bairro = dados['bairro']
+            user.cidade = dados['cidade']
+            user.estado = dados['estado']
+            user.cep = dados['cep']
+            user.save()
+            # Adiciona uma mensagem de sucesso (opcional, mas bom)
+            return redirect('profile')
     else:
-        form = UserUpdateForm(instance=user)
-
-    return render(request, 'profile.html', {'orders': orders, 'form': form})
+        initial_data = {
+            'rua': request.user.rua,
+            'numero': request.user.numero,
+            'complemento': request.user.complemento,
+            'bairro': request.user.bairro,
+            'cidade': request.user.cidade,
+            'estado': request.user.estado,
+            'cep': request.user.cep,
+        }
+        form = AddressForm(initial=initial_data)
+    
+    # Busca os pedidos do usuário para mostrar também
+    orders = Order.objects.filter(user=request.user).order_by('-created_at')
+    
+    return render(request, 'profile.html', {'form': form, 'orders': orders})
 
 @login_required
 def order_detail(request, order_id):
@@ -309,43 +363,60 @@ def logout_view(request):
     logout(request)
     return redirect('product_list')
 
+import mercadopago
+
 def gerar_link_pagamento(order):
-    # Substitua pelo SEU Access Token de TESTE ou PRODUÇÃO
+    # Seu Token (Mantenha o que você criou)
     sdk = mercadopago.SDK("APP_USR-4810181241624335-120721-387a63fee8df23b6fd28fd1af75c0673-2684151531")
 
-    # Cria a lista de itens para o Mercado Pago
+    # 1. Monta os itens
     items = []
     for item in order.items.all():
+        # Proteção: Garante que o preço nunca é Zero ou Negativo
+        preco = float(item.price)
+        if preco <= 0:
+            preco = 1.00 # MP não aceita valor 0, coloca 1 real de segurança
+
         items.append({
             "id": str(item.product.id),
-            "title": f"{item.product.name} ({item.lens_name})",
-            "quantity": item.quantity,
+            "title": str(item.product.name)[:250], # Limita tamanho do nome
+            "quantity": int(item.quantity),
             "currency_id": "BRL",
-            "unit_price": float(item.price)
+            "unit_price": preco
         })
 
-    # Dados da preferência
+    # 2. Dados da preferência
     preference_data = {
         "items": items,
         "payer": {
-            "email": order.email,
+            "email": "test_user_123456@test.com", # Email falso para teste local
             "first_name": order.user.first_name,
             "last_name": order.user.last_name
         },
-        "external_reference": str(order.id), # ID do pedido para a gente saber quem pagou depois
+        "external_reference": str(order.id),
         "back_urls": {
-            "success": "http://127.0.0.1:8000/minha-conta/",
-            "failure": "http://127.0.0.1:8000/minha-conta/",
-            "pending": "http://127.0.0.1:8000/minha-conta/"
+        "success": "https://gabrielftrin.pythonanywhere.com/minha-conta/",
+        "failure": "https://gabrielftrin.pythonanywhere.com/minha-conta/",
+        "pending": "https://gabrielftrin.pythonanywhere.com/minha-conta/"
         },
-        "auto_return": "approved"
+        "auto_return": "approved" # <--- AGORA PODE FICAR DESCOMENTADO
     }
 
+    # 3. Criação e DIAGNÓSTICO DE ERRO
     preference_response = sdk.preference().create(preference_data)
-    preference = preference_response["response"]
     
-    # Retorna o link de pagamento (init_point)
-    return preference["init_point"]
+    # --- AQUI ESTÁ O SEGREDO: IMPRIMIR A RESPOSTA NO TERMINAL ---
+    print("\n" + "="*50)
+    print("STATUS MP:", preference_response.get("status"))
+    print("RESPOSTA COMPLETA:", preference_response)
+    print("="*50 + "\n")
+
+    # Verifica se deu certo (Status 201 = Criado)
+    if preference_response.get("status") == 201:
+        return preference_response["response"]["init_point"]
+    else:
+        # Se falhou, lança o erro para a gente ver
+        raise Exception(f"Erro MP: {preference_response.get('response')}")
 
 # --- ATUALIZANDO A VIEW DE DETALHE DO PEDIDO ---
 @login_required
@@ -364,4 +435,56 @@ def order_detail(request, order_id):
     return render(request, 'order_detail.html', {
         'order': order,
         'payment_url': payment_url # Enviamos o link para o HTML
+    })
+
+def gerar_pagamento_pix(order):
+    # SEU TOKEN (O mesmo que você usou na outra função)
+    sdk = mercadopago.SDK("APP_USR-4810181241624335-120721-387a63fee8df23b6fd28fd1af75c0673-2684151531")
+
+    payment_data = {
+        "transaction_amount": float(order.total_price),
+        "description": f"Pedido #{order.id} - Minha Loja",
+        "payment_method_id": "pix",
+        "payer": {
+            "email": "test_user_123456@test.com", # Email fake para evitar erro de autopagamento
+            "first_name": order.user.first_name,
+            "last_name": order.user.last_name,
+            "identification": {
+                "type": "CPF",
+                "number": "19119119100"
+            }
+        },
+        "external_reference": str(order.id)
+    }
+
+    payment_response = sdk.payment().create(payment_data)
+    
+    # Debug para caso dê erro
+    if payment_response["status"] != 201:
+        print("ERRO PIX:", payment_response)
+        raise Exception("Erro ao gerar Pix no Mercado Pago")
+
+    payment = payment_response["response"]
+
+    # Pega os dados do QR Code
+    qr_code = payment['point_of_interaction']['transaction_data']['qr_code']
+    qr_code_base64 = payment['point_of_interaction']['transaction_data']['qr_code_base64']
+    
+    return qr_code, qr_code_base64
+
+@login_required
+def pagamento_pix_view(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    
+    try:
+        copia_cola, imagem_b64 = gerar_pagamento_pix(order)
+    except Exception as e:
+        print(f"Erro ao gerar Pix: {e}")
+        # Se der erro, volta para os detalhes do pedido
+        return redirect('order_detail', order_id=order.id)
+
+    return render(request, 'pix_payment.html', {
+        'order': order,
+        'copia_cola': copia_cola,
+        'imagem_b64': imagem_b64
     })

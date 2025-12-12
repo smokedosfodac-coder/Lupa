@@ -74,3 +74,14 @@ class UserUpdateForm(forms.ModelForm):
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
             'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '(XX) 9XXXX-XXXX'}),
         }
+
+class AddressForm(forms.Form):
+    rua = forms.CharField(label="Rua", max_length=100, widget=forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Ex: Av. Paulista'}))
+    numero = forms.CharField(label="Número", max_length=10, widget=forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Ex: 1000'}))
+    complemento = forms.CharField(label="Complemento", required=False, widget=forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Apto 101 (Opcional)'}))
+    bairro = forms.CharField(label="Bairro", max_length=100, widget=forms.TextInput(attrs={'class': 'form-input'}))
+    cidade = forms.CharField(label="Cidade", max_length=100, widget=forms.TextInput(attrs={'class': 'form-input'}))
+    estado = forms.CharField(label="Estado", max_length=2, widget=forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'SP'}))
+    cep = forms.CharField(label="CEP", max_length=9, widget=forms.TextInput(attrs={'class': 'form-input', 'placeholder': '00000-000'}))
+
+    

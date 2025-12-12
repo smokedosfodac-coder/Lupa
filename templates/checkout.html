@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}Endereço de Entrega{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 3rem auto; padding: 2rem; background: #fff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+    <h2 style="margin-bottom: 1.5rem; text-align: center;">Onde devemos entregar? 🚚</h2>
+
+    <div style="background: #f0fdf4; border: 1px solid #22c55e; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; text-align: center;">
+        <h3 style="color: #15803d; font-size: 1.1rem; margin-bottom: 0.5rem;">FRETE GRÁTIS ATIVADO! 🎉</h3>
+        <p style="color: #166534; font-size: 0.95rem;">Prazo estimado: <strong>2 a 7 dias úteis</strong></p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        
+        <div style="display: grid; gap: 1rem;">
+            <div>
+                <label style="display: block; font-weight: 600; margin-bottom: 5px;">CEP</label>
+                {{ form.cep }}
+            </div>
+
+            <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 1rem;">
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 5px;">Rua</label>
+                    {{ form.rua }}
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 5px;">Número</label>
+                    {{ form.numero }}
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 5px;">Complemento</label>
+                    {{ form.complemento }}
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 5px;">Bairro</label>
+                    {{ form.bairro }}
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 1rem;">
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 5px;">Cidade</label>
+                    {{ form.cidade }}
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 5px;">UF</label>
+                    {{ form.estado }}
+                </div>
+            </div>
+        </div>
+        <div style="margin-top: 2rem; border-top: 1px solid #eee; padding-top: 2rem;">
+            <h3 style="margin-bottom: 1rem; font-size: 1.2rem;">Forma de Pagamento</h3>
+            
+            <label style="display: block; margin-bottom: 1rem; cursor: pointer; border: 1px solid #ccc; padding: 15px; border-radius: 8px;">
+                <input type="radio" name="payment_method" value="pix" checked>
+                <strong style="margin-left: 10px;">💠 Pix (Aprovação Imediata)</strong>
+                <p style="margin-left: 28px; font-size: 0.9rem; color: #666;">Gera o QR Code na hora. Mais rápido.</p>
+            </label>
+
+            <label style="display: block; cursor: pointer; border: 1px solid #ccc; padding: 15px; border-radius: 8px;">
+                <input type="radio" name="payment_method" value="mp">
+                <strong style="margin-left: 10px;">💳 Cartão ou Boleto (Mercado Pago)</strong>
+                <p style="margin-left: 28px; font-size: 0.9rem; color: #666;">Ambiente seguro do Mercado Pago.</p>
+            </label>
+        </div>
+
+        <button type="submit" style="width: 100%; margin-top: 2rem; background: #0071e3; color: white; padding: 15px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer;">
+            Finalizar Pedido →
+        </button>
+    </form>
+</div>
+
+<style>
+    .form-input {
+        width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;
+    }
+</style>
+{% endblock %}
