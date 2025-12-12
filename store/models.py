@@ -12,13 +12,13 @@ class CustomUser(AbstractUser):
     phone = models.CharField(max_length=15, blank=True, null=True)
     
     # --- NOVOS CAMPOS DE ENDEREÇO ---
-    cep = models.CharField("CEP", max_length=9, blank=True)
-    rua = models.CharField("Rua", max_length=100, blank=True)
-    numero = models.CharField("Número", max_length=10, blank=True)
-    complemento = models.CharField("Complemento", max_length=50, blank=True)
-    bairro = models.CharField("Bairro", max_length=100, blank=True)
-    cidade = models.CharField("Cidade", max_length=100, blank=True)
-    estado = models.CharField("Estado", max_length=2, blank=True)
+    cep = models.CharField("CEP", max_length=9, blank=True, default="")
+    rua = models.CharField("Rua", max_length=100, blank=True, default="")
+    numero = models.CharField("Número", max_length=10, blank=True, default="")
+    complemento = models.CharField("Complemento", max_length=50, blank=True, default="")
+    bairro = models.CharField("Bairro", max_length=100, blank=True, default="")
+    cidade = models.CharField("Cidade", max_length=100, blank=True, default="")
+    estado = models.CharField("Estado", max_length=2, blank=True, default="")
 
     # Configurações padrão que já existiam
     USERNAME_FIELD = 'email'
